@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>ShelbyWx</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link href="./index.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: rgb(126, 78, 237)">
+            <a class="navbar-brand" href="#">ShelbyWx</a>
+        </nav>
+
+        <!-- Atmospheric -->
+        <div class="container-md">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Atmospherics</h5>
+                    <div class="row">
+
+                        <!-- Displays -->
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Temp</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field-strong" id="param_temp">--</div>
+                                    <div class="col unit">&deg;F</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Feels like</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_temp_feels_like">--</div>
+                                    <div class="col unit">&deg;F</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Humidity</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_humidity">--</div>
+                                    <div class="col unit">%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Baro (rel)</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_baro_rel">--</div>
+                                    <div class="col unit">inHg</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rain -->
+        <div class="container-md">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Rain</h5>
+                    <div class="row">
+
+                        <!-- Displays -->
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Today</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field-strong" id="param_rain_day">--</div>
+                                    <div class="col unit">"</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">This month</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_rain_month">--</div>
+                                    <div class="col unit">"</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">This year</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_rain_year">--</div>
+                                    <div class="col unit">"</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wind -->
+        <div class="container-md">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Wind</h5>
+                    <div class="row">
+
+                        <!-- Wind wheel -->
+                        <div class="col">
+                            <div class="wind-wheel">
+                                <img src="wind_wheel.svg"/>
+                                <img src="wind_needle.svg"/>
+                            </div>
+                        </div>
+
+                        <!-- Speed and gust -->
+                        <div class="col">
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Speed</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field-strong" id="param_wind_spd">--</div>
+                                    <div class="col unit">mph</div>
+                                </div>
+                            </div>
+
+                            <div class="text-display">
+                                <div class="row">
+                                    <div class="col field-header">Gust</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_wind_gust">--</div>
+                                    <div class="col unit">mph</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Avg and gusts -->
+                        <div class="row">
+                            <div class="col text-display">
+                                <div class="row">
+                                    <div class="col field-header">Avg (10 min)</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_wind_avg_10min">--</div>
+                                    <div class="col unit">mph</div>
+                                </div>
+                            </div>
+
+                            <div class="col text-display">
+                                <div class="row">
+                                    <div class="col field-header">Gust max (day)</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_wind_gust_max_day">--</div>
+                                    <div class="col unit">mph</div>
+                                </div>
+                            </div>
+                            <div class="col text-display">
+                                <div class="row">
+                                    <div class="col field-header">Gust direction</div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-auto field" id="param_wind_gust_dir">--</div>
+                                    <div class="col unit">&deg;</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+                crossorigin="anonymous"></script>
+    </body>
+
+</html>

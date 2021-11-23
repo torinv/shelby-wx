@@ -1,0 +1,35 @@
+.field {
+    font-size: xx-large;
+}
+
+.field-strong {
+    font-size: xx-large;
+    font-weight: bold;
+}
+
+.unit {
+    font-size: large;
+}
+
+.card-title {
+    font-size: small;
+    font-weight: bold;
+}
+
+.card {
+    max-width: 50;
+    margin-top: 10px;
+}
+
+.wind-wheel {
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 220px;
+}
+
+.wind-wheel img {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
