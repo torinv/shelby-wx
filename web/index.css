@@ -33,3 +33,9 @@
     top: 0;
     left: 0;
 }
+
+.wind-wheel div {
+    position: absolute;
+    top: 89px;
+    left: 90px;
+}
