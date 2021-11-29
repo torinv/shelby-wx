@@ -14,34 +14,54 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script src="{{ url_for('static', filename='jQueryRotate.js') }}"></script>
         <script>
-            $(document).ready(function () {
-                // $.ajax({
-                //     url: "api-url-here"
-                // }).then(
-                setInterval($.getJSON("./test_data_event.json", function (data) {
-                    // Atmospherics
-                    $("#param_temp").text(data["tempf"]);
-                    $("#param_temp_feels_like").text(data["feelsLike"]);
-                    $("#param_humidity").text(data["humidity"]);
-                    $("#param_baro_rel").text(data["baromrelin"]);
-                    console.log("hello");
+            $SCRIPT_ROOT = '{{ request.script_root | tojson | safe }}';
+            function update_wx_values() {
+                $.getJSON("/_update_wx_data", (data) => {
+                        // Atmospherics
+                        $("#param_temp").text(data["tempf"]);
+                        $("#param_temp_feels_like").text(data["feelsLike"]);
+                        $("#param_humidity").text(data["humidity"]);
+                        $("#param_baro_rel").text(data["baromrelin"]);
                     
-                    // Rain
-                    $("#param_rain_day").text(data["dailyrainin"]);
-                    $("#param_rain_month").text(data["monthlyrainin"]);
-                    $("#param_rain_year").text(data["yearlyrainin"]);
+                        // Rain
+                        $("#param_rain_day").text(data["dailyrainin"]);
+                        $("#param_rain_month").text(data["monthlyrainin"]);
+                        $("#param_rain_year").text(data["yearlyrainin"]);
 
-                    // Wind
-                    $("#wind_needle").rotate(data["winddir"]);
-                    $("#param_wind_dir").text(data["winddir"]);
-                    $("#param_wind_spd").text(data["windspeedmph"]);
-                    $("#param_wind_gust").text(data["windgustmph"]);
-                    $("#param_wind_avg_10min").text(data["windspdmph_avg10m"]);
-                    $("#param_wind_gust_max_day").text(data["maxdailygust"]);
-                    $("#param_wind_gust_dir").text(data["windgustdir"]);
+                        // Wind
+                        $("#wind_needle").rotate(data["winddir"])
+                        $("#param_wind_dir").text(data["winddir"]);
+                        $("#param_wind_spd").text(data["windspeedmph"]);
+                        $("#param_wind_gust").text(data["windgustmph"]);
+                        $("#param_wind_avg_10min").text(data["windspdmph_avg10m"]);
+                        $("#param_wind_gust_max_day").text(data["maxdailygust"]);
+                        $("#param_wind_gust_dir").text(data["windgustdir"]);
+                    }
+                )
+            };
 
-                }), 1000);
+            function get_time_lapse_params() {
+                $.getJSON("/_get_time_lapse_params", (data) => {
+                    $("#time_lapse_frames").text(data["num_frames"])
+                    $("#time_lapse_units").val(data["unit"])
+                    if (data["num_frames"] == 1) {
+                        $("#time_lapse_frames_text").text("frame every")
+                    } else {
+                        $("#time_lapse_frames_text").text("frames every")
+                    }
+                }
+            )};
+
+            function get_latest_time_lapse() {
+                $.getJSON("/_get_latest_time_lapse", (data) => {
+
+                })
+            };
+            $(document).ready(function() {
+                get_time_lapse_params();
+                get_latest_time_lapse();
             });
+            setInterval(update_wx_values, 1000);
         </script>
     </head>
 
@@ -172,7 +192,7 @@
                         <div class="col">
                             <div class="wind-wheel">
                                 <img src="{{ url_for('static', filename='wind_wheel.svg') }}"/>
-                                <img src="{{ url_for('static', filename='wind_needle.svg') }}"/>
+                                <img src="{{ url_for('static', filename='wind_needle.svg') }}" id="wind_needle"/>
                                 <div id="param_wind_dir">222</div>
                             </div>
                         </div>
@@ -247,7 +267,42 @@
                     </div>
                     <div class="row">
                         <div class="col-sm">
-                            <button type="button" class="btn btn-primary">Save Time Lapse</button>
+                            <form method="POST" id="savetimelapseform" action="/">
+                                <input type="submit" value="Save Time Lapse" class="btn btn-primary" name="save">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time lapse controls -->
+        <div class="container-md">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Time Lapse Controls</h5>
+                    <form method="POST" id="timelapseform" action="/"></form>
+                    <div class="row">
+                        <div class="col-auto">
+                            Take  
+                        </div>
+                        <div class="col-auto">
+                            <textarea id="time_lapse_frames" rows="1" cols="3" form="timelapseform" name="frames"></textarea>
+                        </div>
+                        <div class="col-auto" id="time_lapse_frames_text">
+                            frames every
+                        </div>
+                        <div class="col-auto">
+                            <select id="time_lapse_units" name="units" form="timelapseform">
+                                <option value="1">minute</option>
+                                <option value="2">hour</option>
+                                <option value="3">day</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <input type="submit" value="Update" form="timelapseform" name="update" class="btn btn-primary">
                         </div>
                     </div>
                 </div>
