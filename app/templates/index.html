@@ -17,47 +17,47 @@
             $SCRIPT_ROOT = '{{ request.script_root | tojson | safe }}';
             function update_wx_values() {
                 $.getJSON("/_update_wx_data", (data) => {
-                        // Atmospherics
-                        $("#param_temp").text(data["tempf"]);
-                        $("#param_temp_feels_like").text(data["feelsLike"]);
-                        $("#param_humidity").text(data["humidity"]);
-                        $("#param_baro_rel").text(data["baromrelin"]);
+                    // Atmospherics
+                    $("#param_temp").text(data["tempf"]);
+                    $("#param_temp_feels_like").text(data["feelsLike"]);
+                    $("#param_humidity").text(data["humidity"]);
+                    $("#param_baro_rel").text(data["baromrelin"]);
                     
-                        // Rain
-                        $("#param_rain_day").text(data["dailyrainin"]);
-                        $("#param_rain_month").text(data["monthlyrainin"]);
-                        $("#param_rain_year").text(data["yearlyrainin"]);
+                    // Rain
+                    $("#param_rain_day").text(data["dailyrainin"]);
+                    $("#param_rain_month").text(data["monthlyrainin"]);
+                    $("#param_rain_year").text(data["yearlyrainin"]);
 
-                        // Wind
-                        $("#wind_needle").rotate(data["winddir"])
-                        $("#param_wind_dir").text(data["winddir"]);
-                        $("#param_wind_spd").text(data["windspeedmph"]);
-                        $("#param_wind_gust").text(data["windgustmph"]);
-                        $("#param_wind_avg_10min").text(data["windspdmph_avg10m"]);
-                        $("#param_wind_gust_max_day").text(data["maxdailygust"]);
-                        $("#param_wind_gust_dir").text(data["windgustdir"]);
-                    }
-                )
+                    // Wind
+                    $("#wind_needle").rotate(data["winddir"])
+                    $("#param_wind_dir").text(data["winddir"]);
+                    $("#param_wind_spd").text(data["windspeedmph"]);
+                    $("#param_wind_gust").text(data["windgustmph"]);
+                    $("#param_wind_avg_10min").text(data["windspdmph_avg10m"]);
+                    $("#param_wind_gust_max_day").text(data["maxdailygust"]);
+                    $("#param_wind_gust_dir").text(data["windgustdir"]);
+                })
             };
 
             function get_time_lapse_params() {
                 $.getJSON("/_get_time_lapse_params", (data) => {
-                    $("#time_lapse_frames").text(data["num_frames"])
-                    $("#time_lapse_units").val(data["unit"])
+                    $("#time_lapse_frames").text(data["num_frames"]);
+                    $("#time_lapse_units").val(data["unit"]);
+                    $("#time_lapse_fps").val(data["fps"]);
+                    $("#time_lapse_frame_retain").val(data["retain"]);
                     if (data["num_frames"] == 1) {
-                        $("#time_lapse_frames_text").text("frame every")
+                        $("#time_lapse_frames_text").text("frame per");
                     } else {
-                        $("#time_lapse_frames_text").text("frames every")
+                        $("#time_lapse_frames_text").text("frames per");
                     }
                 }
             )};
 
             function get_latest_time_lapse() {
-                $.getJSON("/_get_latest_time_lapse", (data) => {
+                $.get("/_get_latest_time_lapse", () => {})
+            }
 
-                })
-            };
-            $(document).ready(function() {
+            $(document).ready(() => {
                 get_time_lapse_params();
                 get_latest_time_lapse();
             });
@@ -262,9 +262,13 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Time Lapse</h5>
-                    <div class="row embed-responsive embed-responsive-16by9">
-                        <iframe class="embed-responsive-item" allowfullscreen></iframe>
+                    <div class="row">
+                        <video width="320" height="240" controls>
+                            <source src="/static/time_lapse.mp4" type="video/mp4" id="video_player">
+                            Your browser does not support video playback
+                        </video>
                     </div>
+                    <br>
                     <div class="row">
                         <div class="col-sm">
                             <form method="POST" id="savetimelapseform" action="/">
@@ -284,13 +288,13 @@
                     <form method="POST" id="timelapseform" action="/"></form>
                     <div class="row">
                         <div class="col-auto">
-                            Take  
+                            <h5>Capture: </h5>
                         </div>
                         <div class="col-auto">
                             <textarea id="time_lapse_frames" rows="1" cols="3" form="timelapseform" name="frames"></textarea>
                         </div>
                         <div class="col-auto" id="time_lapse_frames_text">
-                            frames every
+                            frames per
                         </div>
                         <div class="col-auto">
                             <select id="time_lapse_units" name="units" form="timelapseform">
@@ -300,6 +304,25 @@
                             </select>
                         </div>
                     </div>
+                    <br>
+                    <div class="row">
+                        <div class="col-auto">
+                            <h5>Playback: </h5>
+                        </div>
+                        <div class="col-auto">
+                            <textarea id="time_lapse_frame_retain" rows="1" cols="4" form="timelapseform" name="retain"></textarea>
+                        </div>
+                        <div class="col-auto">
+                            frames at 
+                        </div>
+                        <div class="col-auto">
+                            <textarea id="time_lapse_fps" rows="1" cols="3" form="timelapseform" name="fps"></textarea>
+                        </div>
+                        <div class="col-auto" id="time_lapse_frames_text">
+                            frames per second
+                        </div>
+                    </div>
+                    <br>
                     <div class="row">
                         <div class="col-sm">
                             <input type="submit" value="Update" form="timelapseform" name="update" class="btn btn-primary">

@@ -18,7 +18,12 @@ def index_save_time_lapse():
         except:
             pass
 
-        time_lapse_driver.update_params(int(request.form['frames']), int(request.form['units']))
+        time_lapse_driver.update_params(
+            int(request.form['frames']),
+            int(request.form['units']),
+            int(request.form['fps']),
+            int(request.form['retain'])
+        )
 
     return render_template('index.html')
 
@@ -29,12 +34,19 @@ def update_wx_data():
 
 @app.route('/_get_latest_time_lapse', methods=['GET'])
 def get_latest_time_lapse():
-    return {}
+    time_lapse = time_lapse_driver.gen_time_lapse()
+    if time_lapse is None:
+        return {}
+    return jsonify(src='/static/' + time_lapse)
 
 @app.route('/_get_time_lapse_params', methods=['GET'])
 def get_time_lapse_params():
-    return jsonify(num_frames=time_lapse_driver.num_frames, unit=time_lapse_driver.unit.value)
-
+    return jsonify(
+        num_frames=time_lapse_driver.num_frames,
+        unit=time_lapse_driver.unit.value, 
+        fps=time_lapse_driver.fps,
+        retain=time_lapse_driver.retain_frames
+    )
 
 if __name__ == '__main__':
     Thread(target=time_lapse_driver.run).start()
