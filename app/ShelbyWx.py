@@ -1,9 +1,13 @@
+import os
+import json
+import yaml
 from flask import Flask, render_template, jsonify, request
 from TimeLapseDriver import TimeLapseDriver, TimeLapseUnit
-import json
 from threading import Thread
+from ambient_api.ambientapi import AmbientAPI
 
 app = Flask(__name__)
+api = AmbientAPI()
 
 time_lapse_driver = TimeLapseDriver()
 
@@ -29,7 +33,8 @@ def index_save_time_lapse():
 
 @app.route('/_update_wx_data', methods=['GET'])
 def update_wx_data():
-    # TODO: requests.get the actual AW API here
+    # device = api.get_devices()[0]
+    # return device.get_data()
     return json.load(open('./test_data_event.json', 'r'))
 
 @app.route('/_get_latest_time_lapse', methods=['GET'])
@@ -49,5 +54,11 @@ def get_time_lapse_params():
     )
 
 if __name__ == '__main__':
+    # Setup env vars
+    keys = yaml.load(open('./keys.yml', 'r'), Loader=yaml.Loader)
+    os.environ['AMBIENT_ENDPOINT'] = keys['endpoint']
+    os.environ['AMBIENT_API_KEY'] = keys['api_key']
+    os.environ['AMBIENT_APPLICATION_KEY'] = keys['application_key']
+    
     Thread(target=time_lapse_driver.run).start()
     Thread(target=app.run).start()

@@ -109,6 +109,7 @@ class TimeLapseDriver(object):
             writer.write(img)
 
         writer.release()
+        return 'time_lapse.mp4'
 
     def _delete_time_lapse(self):
         if os.path.exists(self._temp_path):
