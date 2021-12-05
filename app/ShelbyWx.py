@@ -2,7 +2,7 @@ import os
 import json
 import yaml
 from flask import Flask, render_template, jsonify, request
-from TimeLapseDriver import TimeLapseDriver, TimeLapseUnit
+from TimeLapseDriver import TimeLapseDriver
 from threading import Thread
 from ambient_api.ambientapi import AmbientAPI
 
