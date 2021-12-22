@@ -5,6 +5,7 @@ RUN pip3 install -r /app/requirements.txt
 
 ENV CAM_USER=user
 ENV CAM_PASSWORD=password
+ENV FLASK_APP=ShelbyWx
 
 WORKDIR /app
-ENTRYPOINT ["python3", "/app/ShelbyWx.py"]
+ENTRYPOINT ["flask", "run", "--host", "0.0.0.0", "--port", "80"]

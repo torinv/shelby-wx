@@ -67,7 +67,7 @@ class TimeLapseDriver(object):
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
     def take_snapshot(self):
-        url = 'http://192.168.1.250/cgi-bin/snapshot.cgi'
+        url = 'http://192.168.1.246/cgi-bin/snapshot.cgi'
         response = requests.get(url, auth=HTTPDigestAuth(os.environ['CAM_USER'], os.environ['CAM_PASSWORD']))
 
         if response.status_code == 200:
