@@ -3,16 +3,16 @@
 }
 
 .field {
-    font-size: xx-large;
+    font-size: large;
 }
 
 .field-strong {
-    font-size: xx-large;
+    font-size: x-large;
     font-weight: bold;
 }
 
 .unit {
-    font-size: large;
+    font-size: medium;
 }
 
 .card-title {
