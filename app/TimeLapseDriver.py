@@ -26,7 +26,7 @@ class TimeLapseDriver(object):
         self.fps = 15
         self.retain_frames = 1000
 
-        self._frame_queue = deque(maxlen=self.retain_frames)
+        self._frame_queue = deque()
         self._temp_path = os.path.join('./static', 'time_lapse.mp4')
 
         self._counter = 0
@@ -59,11 +59,12 @@ class TimeLapseDriver(object):
 
         # Reset frame deque if it changed sizes
         lock.acquire()
-        if retain != self._frame_queue.maxlen:
-            self.retain_frames = retain
-            self._frame_queue = deque(self._frame_queue, maxlen=retain)
+        if retain < self.retain_frames:
+            while len(self._frame_queue) > retain:
+                os.remove(self._frame_queue.popleft())
         lock.release()
 
+        self.retain_frames = retain
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
     def take_snapshot(self):
@@ -74,6 +75,8 @@ class TimeLapseDriver(object):
             frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
             lock.acquire()
             self._frame_queue.append(frame_file)
+            if len(self._frame_queue) > self.retain_frames:
+                os.remove(self._frame_queue.popleft())
             lock.release()
 
             with open(frame_file, 'wb') as f:
