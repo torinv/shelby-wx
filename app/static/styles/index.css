@@ -44,6 +44,10 @@
     left: 90px;
 }
 
+.wind-param {
+    margin-bottom: 15px;
+}
+
 #video_loading {
     text-align: center;
 }

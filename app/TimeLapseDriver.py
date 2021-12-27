@@ -6,7 +6,7 @@ import cv2
 import threading
 from collections import deque
 from enum import Enum
-from requests.auth import HTTPDigestAuth
+from threading import Thread
 
 lock = threading.Lock()
 
@@ -37,6 +37,11 @@ class TimeLapseDriver(object):
             os.environ['CAM_PASSWORD'] + \
             '@192.168.1.246:554/cam/realmonitor?channel=1&subtype=0'
         self._cam_stream = cv2.VideoCapture(cap_url)
+        self._latest_frame = None
+
+        self._cap_thread = Thread(target=self._get_latest_frame())
+        self._cap_thread.daemon = True
+        self._cap_thread.start()
 
         # Empty out frame buffer
         for file in os.listdir('./frames'):
@@ -44,6 +49,12 @@ class TimeLapseDriver(object):
 
     def __del__(self):
         self._cam_stream.release()
+        self._cap_thread.join()
+
+    def _get_latest_frame(self):
+        status, frame = self._cam_stream.read()
+        if status:
+            self._latest_frame = frame
 
     def run(self):
         while(True):
@@ -77,16 +88,17 @@ class TimeLapseDriver(object):
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
     def take_snapshot(self):
-        _, frame = self._cam_stream.read()
         frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
 
-        lock.acquire()
-        self._frame_queue.append(frame_file)
-        if len(self._frame_queue) > self.retain_frames:
-            os.remove(self._frame_queue.popleft())
-        lock.release()
+        if self._latest_frame is not None:
+            lock.acquire()
+            self._frame_queue.append(frame_file)
+            if len(self._frame_queue) > self.retain_frames:
+                os.remove(self._frame_queue.popleft())
+            lock.release()
 
-        cv2.imwrite(frame_file, frame)
+            cv2.imwrite(frame_file, self._latest_frame)
+            self._cam_stream.release()
 
     def save_time_lapse(self):
         if os.path.exists(self._temp_path):

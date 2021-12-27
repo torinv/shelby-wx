@@ -17,6 +17,9 @@
             $SCRIPT_ROOT = '{{ request.script_root | tojson | safe }}';
             function update_wx_values() {
                 $.getJSON("/_update_wx_data", (data) => {
+                    // Time
+                    $("#last_updated").text("Last updated: " + data["dateutc"])
+
                     // Atmospherics
                     $("#param_temp").text(data["tempf"]);
                     $("#param_temp_feels_like").text(data["feelsLike"]);
@@ -66,8 +69,9 @@
             $(document).ready(() => {
                 get_time_lapse_params();
                 get_latest_time_lapse();
+                update_wx_values();
             });
-            setInterval(update_wx_values, 1000);
+            setInterval(update_wx_values, 60e3);
         </script>
     </head>
 
@@ -75,6 +79,7 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-dark">
             <a class="navbar-brand" href="#">ShelbyWx</a>
+            <a class="navbar-text" id="last_updated">Last updated: --:--:--</a>
         </nav>
 
         <!-- Atmospheric -->
@@ -170,18 +175,6 @@
                             </div>
                         </div>
 
-                        <div class="col">
-                            <div class="text-display">
-                                <div class="row">
-                                    <div class="col field-header">This year</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-auto field" id="param_rain_year">--</div>
-                                    <div class="col unit">"</div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -205,7 +198,7 @@
 
                         <!-- Speed and gust -->
                         <div class="col" style="margin-left: 100px">
-                            <div class="text-display">
+                            <div class="text-display wind-param">
                                 <div class="row">
                                     <div class="col field-header">Speed</div>
                                 </div>
@@ -215,7 +208,7 @@
                                 </div>
                             </div>
 
-                            <div class="text-display">
+                            <div class="text-display wind-param">
                                 <div class="row">
                                     <div class="col field-header">Gust</div>
                                 </div>
@@ -224,36 +217,14 @@
                                     <div class="col unit">mph</div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Avg and gusts -->
-                        <div class="row">
-                            <div class="col text-display">
-                                <div class="row">
-                                    <div class="col field-header">Avg (10 min)</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-auto field" id="param_wind_avg_10min">--</div>
-                                    <div class="col unit">mph</div>
-                                </div>
-                            </div>
-
-                            <div class="col text-display">
+                            <div class="text-display wind-param">
                                 <div class="row">
                                     <div class="col field-header">Gust max (day)</div>
                                 </div>
                                 <div class="row">
                                     <div class="col-auto field" id="param_wind_gust_max_day">--</div>
                                     <div class="col unit">mph</div>
-                                </div>
-                            </div>
-                            <div class="col text-display">
-                                <div class="row">
-                                    <div class="col field-header">Gust direction</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-auto field" id="param_wind_gust_dir">--</div>
-                                    <div class="col unit">&deg;</div>
                                 </div>
                             </div>
                         </div>

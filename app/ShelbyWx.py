@@ -1,11 +1,14 @@
-import yaml
+import os
+import requests
+from datetime import datetime as dt
 from flask import Flask, render_template, jsonify, request
 from TimeLapseDriver import TimeLapseDriver
 from threading import Thread
-from ambient_api.ambientapi import AmbientAPI
 
 app = Flask(__name__)
-api = AmbientAPI()
+api_string = 'https://rt.ambientweather.net/v1/devices?applicationKey=' + \
+    os.environ['AMBIENT_APPLICATION_KEY'] + \
+    '&apiKey=' + os.environ['AMBIENT_API_KEY']
 
 time_lapse_driver = TimeLapseDriver()
 
@@ -31,8 +34,16 @@ def index_save_time_lapse():
 
 @app.route('/_update_wx_data', methods=['GET'])
 def update_wx_data():
-    device = api.get_devices()[0]
-    return device.get_data()
+    resp = requests.get(api_string)
+    if resp.status_code == 200:
+        weather_data = resp.json()[0]['lastData']
+
+        timestamp = dt.fromtimestamp(weather_data['dateutc'] // 1000)
+        formatted_timestamp = timestamp.strftime("%I:%M %p")
+        weather_data['dateutc'] = formatted_timestamp
+
+        return jsonify(weather_data)
+    return {}
 
 @app.route('/_get_latest_time_lapse', methods=['GET'])
 def get_latest_time_lapse():
@@ -49,6 +60,7 @@ def get_time_lapse_params():
         fps=time_lapse_driver.fps,
         retain=time_lapse_driver.retain_frames
     )
+
 
 if __name__ == '__main__':
     Thread(target=time_lapse_driver.run).start()
