@@ -1,5 +1,4 @@
 import time
-import requests
 import os
 import shutil
 import datetime
@@ -32,9 +31,19 @@ class TimeLapseDriver(object):
         self._counter = 0
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
+        # Stream
+        cap_url = 'rtsp://' + \
+            os.environ['CAM_USER'] + ':' + \
+            os.environ['CAM_PASSWORD'] + \
+            '@192.168.1.246:554/cam/realmonitor?channel=1&subtype=0'
+        self._cam_stream = cv2.VideoCapture(cap_url)
+
         # Empty out frame buffer
         for file in os.listdir('./frames'):
             os.remove(os.path.join('./frames', file))
+
+    def __del__(self):
+        self._cam_stream.release()
 
     def run(self):
         while(True):
@@ -68,19 +77,16 @@ class TimeLapseDriver(object):
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
     def take_snapshot(self):
-        url = 'http://192.168.1.246/cgi-bin/snapshot.cgi'
-        response = requests.get(url, auth=HTTPDigestAuth(os.environ['CAM_USER'], os.environ['CAM_PASSWORD']))
+        _, frame = self._cam_stream.read()
+        frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
 
-        if response.status_code == 200:
-            frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
-            lock.acquire()
-            self._frame_queue.append(frame_file)
-            if len(self._frame_queue) > self.retain_frames:
-                os.remove(self._frame_queue.popleft())
-            lock.release()
+        lock.acquire()
+        self._frame_queue.append(frame_file)
+        if len(self._frame_queue) > self.retain_frames:
+            os.remove(self._frame_queue.popleft())
+        lock.release()
 
-            with open(frame_file, 'wb') as f:
-                f.write(response.content)
+        cv2.imwrite(frame_file, frame)
 
     def save_time_lapse(self):
         if os.path.exists(self._temp_path):
