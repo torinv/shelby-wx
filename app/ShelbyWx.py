@@ -51,8 +51,5 @@ def get_time_lapse_params():
     )
 
 if __name__ == '__main__':
-    # Setup env vars
-    keys = yaml.load(open('./keys.yml', 'r'), Loader=yaml.Loader)
-
     Thread(target=time_lapse_driver.run).start()
     Thread(target=app.run).start()
