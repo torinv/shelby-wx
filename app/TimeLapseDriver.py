@@ -54,13 +54,12 @@ class TimeLapseDriver(object):
         self._capture_thread.join()
 
     def _get_latest_frame(self):
+        cam_stream = cv2.VideoCapture(self._capture_url)
         while True:
-            cam_stream = cv2.VideoCapture(self._capture_url)
             status, frame = cam_stream.read()
             if status:
                 self._latest_frame = frame
-            cam_stream.release()
-            time.sleep(1/15)
+            time.sleep(1)
 
     def run(self):
         while True:
