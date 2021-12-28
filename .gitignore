@@ -3,3 +3,4 @@ __pycache__
 keys.yml
 *.mp4
 *.jpeg
+.vscode

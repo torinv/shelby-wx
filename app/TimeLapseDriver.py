@@ -32,29 +32,30 @@ class TimeLapseDriver(object):
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
         # Stream
-        cap_url = 'rtsp://' + \
+        self._capture_url = 'rtsp://' + \
             os.environ['CAM_USER'] + ':' + \
             os.environ['CAM_PASSWORD'] + \
             '@192.168.1.246:554/cam/realmonitor?channel=1&subtype=0'
-        self._cam_stream = cv2.VideoCapture(cap_url)
         self._latest_frame = None
 
-        self._cap_thread = Thread(target=self._get_latest_frame())
-        self._cap_thread.daemon = True
-        self._cap_thread.start()
+        self._capture_thread = Thread(target=self._get_latest_frame)
+        self._capture_thread.daemon = True
+        self._capture_thread.start()
 
         # Empty out frame buffer
         for file in os.listdir('./frames'):
             os.remove(os.path.join('./frames', file))
 
     def __del__(self):
-        self._cam_stream.release()
-        self._cap_thread.join()
+        self._capture_thread.join()
 
     def _get_latest_frame(self):
-        status, frame = self._cam_stream.read()
-        if status:
-            self._latest_frame = frame
+        cam_stream = cv2.VideoCapture(self._capture_url)
+        while True:
+            status, frame = cam_stream.read()
+            if status:
+                self._latest_frame = frame
+            time.sleep(1)
 
     def run(self):
         while(True):
@@ -98,7 +99,6 @@ class TimeLapseDriver(object):
             lock.release()
 
             cv2.imwrite(frame_file, self._latest_frame)
-            self._cam_stream.release()
 
     def save_time_lapse(self):
         if os.path.exists(self._temp_path):
