@@ -8,6 +8,9 @@ from collections import deque
 from enum import Enum
 from threading import Thread
 
+FRAME_WIDTH = 3840
+FRAME_HEIGHT = 2160
+
 lock = threading.Lock()
 
 class TimeLapseUnit(Enum):
@@ -16,8 +19,9 @@ class TimeLapseUnit(Enum):
     DAY = 3
 
 class TimeLapseDriver(object):
-    def __init__(self):
+    def __init__(self, save_images_to_disk: bool=False):
         # Record
+        self._save_to_disk = save_images_to_disk
         self.num_frames = 60
         self.unit = TimeLapseUnit.MINUTE
 
@@ -55,10 +59,9 @@ class TimeLapseDriver(object):
             status, frame = cam_stream.read()
             if status:
                 self._latest_frame = frame
-            time.sleep(1)
 
     def run(self):
-        while(True):
+        while True:
             time.sleep(1)
 
             # Count up to the next snapshot
@@ -89,16 +92,29 @@ class TimeLapseDriver(object):
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
     def take_snapshot(self):
+        if self._latest_frame is not None:
+            if self._save_to_disk:
+                self.save_snapshot_disk()
+            else:
+                self.save_snapshot_ram()
+
+    def save_snapshot_ram(self):
+        lock.acquire()
+        self._frame_queue.append(self._latest_frame)
+        if len(self._frame_queue) > self.retain_frames:
+            self._frame_queue.popleft()
+        lock.release()
+
+    def save_snapshot_disk(self):
         frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
 
-        if self._latest_frame is not None:
-            lock.acquire()
-            self._frame_queue.append(frame_file)
-            if len(self._frame_queue) > self.retain_frames:
-                os.remove(self._frame_queue.popleft())
-            lock.release()
+        lock.acquire()
+        self._frame_queue.append(frame_file)
+        if len(self._frame_queue) > self.retain_frames:
+            os.remove(self._frame_queue.popleft())
+        lock.release()
 
-            cv2.imwrite(frame_file, self._latest_frame)
+        cv2.imwrite(frame_file, self._latest_frame)
 
     def save_time_lapse(self):
         if os.path.exists(self._temp_path):
@@ -110,27 +126,36 @@ class TimeLapseDriver(object):
 
         self._delete_time_lapse()
 
-        img_arr = []
-        img = cv2.imread(self._frame_queue[0])
-        height, width, _ = img.shape
+        writer = cv2.VideoWriter(
+            self._temp_path,
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            self.fps,
+            (FRAME_WIDTH, FRAME_HEIGHT)
+        )
+        
+        if self._save_to_disk:
+            self.gen_time_lapse_disk(writer)
+        else:
+            self.gen_time_lapse_ram(writer)
 
+        writer.release()
+        return 'time_lapse.mp4'
+
+    def gen_time_lapse_ram(self, writer):
+        lock.acquire()
+        for img in self._frame_queue:
+            writer.write(img)
+        lock.release()
+
+    def gen_time_lapse_disk(self, writer):
+        img_arr = []
         lock.acquire()
         for image in self._frame_queue:
             img_arr.append(cv2.imread(image))
         lock.release()
 
-        writer = cv2.VideoWriter(
-            self._temp_path,
-            cv2.VideoWriter_fourcc(*'mp4v'),
-            self.fps,
-            (width, height)
-        )
-
         for img in img_arr:
             writer.write(img)
-
-        writer.release()
-        return 'time_lapse.mp4'
 
     def _delete_time_lapse(self):
         if os.path.exists(self._temp_path):
