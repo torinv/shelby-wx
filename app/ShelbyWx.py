@@ -1,5 +1,6 @@
 import os
 import requests
+from pytz import timezone
 from datetime import datetime as dt
 from flask import Flask, render_template, jsonify, request
 from TimeLapseDriver import TimeLapseDriver
@@ -39,7 +40,9 @@ def update_wx_data():
         weather_data = resp.json()[0]['lastData']
 
         timestamp = dt.fromtimestamp(weather_data['dateutc'] // 1000)
-        formatted_timestamp = timestamp.strftime("%I:%M %p")
+        tz = timezone('America/Los_Angeles')
+        timestamp = tz.localize(timestamp)
+        formatted_timestamp = timestamp.strftime("%I:%M %p %Z")
         weather_data['dateutc'] = formatted_timestamp
 
         return jsonify(weather_data)

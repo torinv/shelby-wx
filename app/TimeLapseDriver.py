@@ -19,7 +19,7 @@ class TimeLapseUnit(Enum):
     DAY = 3
 
 class TimeLapseDriver(object):
-    def __init__(self, save_images_to_disk: bool=True):
+    def __init__(self, save_images_to_disk: bool=False):
         # Record
         self._save_to_disk = save_images_to_disk
         self.num_frames = 60
