@@ -19,7 +19,7 @@ class TimeLapseUnit(Enum):
     DAY = 3
 
 class TimeLapseDriver(object):
-    def __init__(self, save_images_to_disk: bool=False):
+    def __init__(self, save_images_to_disk: bool=True):
         # Record
         self._save_to_disk = save_images_to_disk
         self.num_frames = 60
@@ -54,11 +54,13 @@ class TimeLapseDriver(object):
         self._capture_thread.join()
 
     def _get_latest_frame(self):
-        cam_stream = cv2.VideoCapture(self._capture_url)
         while True:
+            cam_stream = cv2.VideoCapture(self._capture_url)
             status, frame = cam_stream.read()
             if status:
                 self._latest_frame = frame
+            cam_stream.release()
+            time.sleep(1/15)
 
     def run(self):
         while True:
