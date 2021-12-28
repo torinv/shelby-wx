@@ -61,6 +61,13 @@ class TimeLapseDriver(object):
                 self._latest_frame = frame
             time.sleep(1)
 
+    def _trim_frame_queue(self):
+        if len(self._frame_queue) > self.retain_frames:
+            if self._save_to_disk:
+                os.remove(self._frame_queue.popleft())
+            else:
+                self._frame_queue.popleft()
+
     def run(self):
         while True:
             time.sleep(1)
@@ -85,8 +92,7 @@ class TimeLapseDriver(object):
         # Reset frame deque if it changed sizes
         lock.acquire()
         if retain < self.retain_frames:
-            while len(self._frame_queue) > retain:
-                os.remove(self._frame_queue.popleft())
+            self._trim_frame_queue()
         lock.release()
 
         self.retain_frames = retain
@@ -102,8 +108,7 @@ class TimeLapseDriver(object):
     def save_snapshot_ram(self):
         lock.acquire()
         self._frame_queue.append(self._latest_frame)
-        if len(self._frame_queue) > self.retain_frames:
-            self._frame_queue.popleft()
+        self._trim_frame_queue()
         lock.release()
 
     def save_snapshot_disk(self):
@@ -111,8 +116,7 @@ class TimeLapseDriver(object):
 
         lock.acquire()
         self._frame_queue.append(frame_file)
-        if len(self._frame_queue) > self.retain_frames:
-            os.remove(self._frame_queue.popleft())
+        self._trim_frame_queue()
         lock.release()
 
         cv2.imwrite(frame_file, self._latest_frame)
