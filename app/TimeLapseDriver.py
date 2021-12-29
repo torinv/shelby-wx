@@ -1,6 +1,6 @@
 import time
 import os
-import shutil
+import imageio
 import datetime
 import cv2
 import threading
@@ -30,7 +30,7 @@ class TimeLapseDriver(object):
         self.retain_frames = 1000
 
         self._frame_queue = deque()
-        self._temp_path = os.path.join('./static', 'time_lapse.mp4')
+        self._temp_path = os.path.join('./static', 'time_lapse.gif')
 
         self._counter = 0
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
@@ -121,30 +121,34 @@ class TimeLapseDriver(object):
 
         cv2.imwrite(frame_file, self._latest_frame)
 
-    def save_time_lapse(self):
-        if os.path.exists(self._temp_path):
-            shutil.copy2(self._temp_path, os.path.join('./movies', str(datetime.datetime.now()) + '.mp4'))
-
-    def gen_time_lapse(self):
+    def gen_time_lapse_preview(self):
         if len(self._frame_queue) == 0:
             return None
 
         self._delete_time_lapse()
 
+        lock.acquire()
+        with imageio.get_writer(self._temp_path, mode='I', duration=1 / self.fps) as writer:
+            for image in self._frame_queue:
+                writer.append_data(cv2.resize(image, (640, 360)))
+        lock.release()
+
+        return 'time_lapse.gif'
+
+    def save_time_lapse(self):
         writer = cv2.VideoWriter(
-            self._temp_path,
+            os.path.join('./movies', str(datetime.datetime.now()) + '.mp4'),
             cv2.VideoWriter_fourcc(*'mp4v'),
             self.fps,
             (FRAME_WIDTH, FRAME_HEIGHT)
         )
-        
+
         if self._save_to_disk:
             self.gen_time_lapse_disk(writer)
         else:
             self.gen_time_lapse_ram(writer)
 
         writer.release()
-        return 'time_lapse.mp4'
 
     def gen_time_lapse_ram(self, writer):
         lock.acquire()

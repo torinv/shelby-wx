@@ -16,7 +16,7 @@ time_lapse_driver = TimeLapseDriver()
 @app.route('/', methods=['GET', 'POST'])
 def index_save_time_lapse():
     if request.form.get('save') == 'Save Time Lapse':
-        time_lapse_driver.save_time_lapse()
+        Thread(target=time_lapse_driver.save_time_lapse).run()
 
     if request.form.get('update') == 'Update':
         try:
@@ -50,7 +50,7 @@ def update_wx_data():
 
 @app.route('/_get_latest_time_lapse', methods=['GET'])
 def get_latest_time_lapse():
-    time_lapse = time_lapse_driver.gen_time_lapse()
+    time_lapse = time_lapse_driver.gen_time_lapse_preview()
     if time_lapse is None:
         return {}
     return jsonify(src='/static/' + time_lapse)
@@ -67,4 +67,4 @@ def get_time_lapse_params():
 
 if __name__ == '__main__':
     Thread(target=time_lapse_driver.run).start()
-    Thread(target=app.run, args=['0.0.0.0', '80']).start()
+    Thread(target=app.run, args=['0.0.0.0']).start()

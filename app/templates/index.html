@@ -57,12 +57,12 @@
             )};
 
             function get_latest_time_lapse() {
-                $("#video_player").hide()
-                $("#video_loading").show()
+                $("#preview_player").hide()
+                $("#preview_loading").show()
                 $.get("/_get_latest_time_lapse", (data) => {
-                    $("#video_player").show()
-                    $("#video_loading").hide()
-                    $("#video_source").attr("src", data["src"])
+                    $("#preview_player").show()
+                    $("#preview_loading").hide()
+                    $("#preview_player").attr("src", data["src"])
                 });
             }
 
@@ -239,15 +239,14 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Time Lapse</h5>
-                    <div class="row">
-                        <div id="video_loading">
+                    <div class="d-flex justify-content-center">
+                        <div id="preview_loading">
+                            <h4>
                                 <img src="{{ url_for('static', filename='loading_wheel.gif') }}" height=60 width=80/>
-                                <h4>Time lapse loading...</h4>
+                                Time lapse loading...
+                            </h4>
                         </div>
-                        <video width="640" height="360" id="video_player" controls loop="true" autoplay>
-                            <source src="" type="video/mp4" id="video_source">
-                            Your browser does not support video playback
-                        </video>
+                        <img id="preview_player" src="" width=640 height=360>
                     </div>
                     <br>
                     <div class="row">
