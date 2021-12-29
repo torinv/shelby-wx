@@ -48,6 +48,11 @@
     margin-bottom: 15px;
 }
 
-#video_loading {
+#preview_loading {
     text-align: center;
+}
+
+#preview_player {
+    max-width: 100%;
+    max-height: 100%;
 }
