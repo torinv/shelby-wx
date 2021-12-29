@@ -3,3 +3,4 @@ opencv_python==4.5.4.60
 PyYAML==6.0
 requests==2.24.0
 pytz==2020.1
+imageio==2.13.5
