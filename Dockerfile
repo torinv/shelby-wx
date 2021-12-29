@@ -6,4 +6,4 @@ RUN pip3 install -r /app/requirements.txt
 ENV FLASK_APP=ShelbyWx
 
 WORKDIR /app
-ENTRYPOINT ["flask", "run", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT ["python3", "ShelbyWx.py"]

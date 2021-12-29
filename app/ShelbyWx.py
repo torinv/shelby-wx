@@ -67,4 +67,4 @@ def get_time_lapse_params():
 
 if __name__ == '__main__':
     Thread(target=time_lapse_driver.run).start()
-    Thread(target=app.run).start()
+    Thread(target=app.run, args=['127.0.0.1', '5000']).start()
