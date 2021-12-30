@@ -48,13 +48,6 @@ def update_wx_data():
         return jsonify(weather_data)
     return {}
 
-@app.route('/_get_latest_time_lapse', methods=['GET'])
-def get_latest_time_lapse():
-    time_lapse = time_lapse_driver.gen_time_lapse_preview()
-    if time_lapse is None:
-        return {}
-    return jsonify(src='/static/' + time_lapse)
-
 @app.route('/_get_time_lapse_params', methods=['GET'])
 def get_time_lapse_params():
     return jsonify(

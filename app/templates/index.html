@@ -56,16 +56,6 @@
                 }
             )};
 
-            function get_latest_time_lapse() {
-                $("#preview_player").hide()
-                $("#preview_loading").show()
-                $.get("/_get_latest_time_lapse", (data) => {
-                    $("#preview_player").show()
-                    $("#preview_loading").hide()
-                    $("#preview_player").attr("src", data["src"])
-                });
-            }
-
             $(document).ready(() => {
                 get_time_lapse_params();
                 get_latest_time_lapse();
@@ -240,11 +230,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Time Lapse</h5>
                     <div class="d-flex justify-content-center">
-                        <div id="preview_loading">
-                                <img src="{{ url_for('static', filename='loading_wheel.gif') }}" height=60 width=80/>
-                                <h4>Time lapse loading...</h4>
-                        </div>
-                        <img id="preview_player" src="">
+                        <img id="preview_player" src="{{ url_for('static', filename='time_lapse.gif') }}">
                     </div>
                     <br>
                     <div class="row">

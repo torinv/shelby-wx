@@ -80,7 +80,8 @@ class TimeLapseDriver(object):
         self._capture_thread.daemon = True
         self._capture_thread.start()
 
-        # Empty out frame buffer
+        # Empty out frame buffer and delete preview
+        self._delete_time_lapse_preview()
         for file in os.listdir('./frames'):
             os.remove(os.path.join('./frames', file))
 
@@ -96,17 +97,18 @@ class TimeLapseDriver(object):
             time.sleep(1)
 
     def run(self):
-        while True:
-            time.sleep(1)
+        with imageio.get_writer(self._temp_path, mode='I', duration=1 / self.fps) as writer:
+            while True:
+                time.sleep(1)
 
-            # Count up to the next snapshot
-            if self._counter < self._seconds_to_wait:
-                self._counter += 1
-                continue
+                # Count up to the next snapshot
+                if self._counter < self._seconds_to_wait:
+                    self._counter += 1
+                    continue
 
-            # Take snapshot and reset counter
-            self._counter = 0
-            self.take_snapshot()
+                # Take snapshot and reset counter
+                self._counter = 0
+                self.take_snapshot(writer)
 
     def update_params(self, num_frames, unit, fps, retain):
         # Set new parameters and reset counter
@@ -124,7 +126,7 @@ class TimeLapseDriver(object):
         self.retain_frames = retain
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
-    def take_snapshot(self):
+    def take_snapshot(self, writer):
         if self._latest_frame is None:
             return
 
@@ -135,23 +137,11 @@ class TimeLapseDriver(object):
         lock.acquire()
         self._frame_queue.append(preview_img, frame_file)
         self._frame_queue.trim(self.retain_frames)
+
+        writer.append_data(preview_img)
         lock.release()
 
         cv2.imwrite(frame_file, self._latest_frame)
-
-    def gen_time_lapse_preview(self):
-        if len(self._frame_queue) == 0:
-            return None
-
-        self._delete_time_lapse_preview()
-
-        lock.acquire()
-        with imageio.get_writer(self._temp_path, mode='I', duration=1 / self.fps) as writer:
-            for image in self._frame_queue.get_preview_images():
-                writer.append_data(image)
-        lock.release()
-
-        return 'time_lapse.gif'
 
     def save_time_lapse(self):
         writer = cv2.VideoWriter(
