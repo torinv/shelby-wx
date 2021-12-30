@@ -56,9 +56,23 @@
                 }
             )};
 
+            function time_lapse_regenerating() {
+                $("#preview_player").hide();
+                $("#preview_loading").show();
+                $.getJSON("/_time_lapse_regenerating", (data) => {
+                    if (data["regenerating"]) {
+                        setTimeout(() => time_lapse_regenerating(), 2000);
+                    } else {
+                        $("#preview_player").attr("src", './static/time_lapse.gif');
+                        $("#preview_player").show();
+                        $("#preview_loading").hide();
+                    }
+                });
+            }
+
             $(document).ready(() => {
                 get_time_lapse_params();
-                get_latest_time_lapse();
+                time_lapse_regenerating();
                 update_wx_values();
             });
             setInterval(update_wx_values, 60e3);
@@ -230,7 +244,11 @@
                 <div class="card-body">
                     <h5 class="card-title">Time Lapse</h5>
                     <div class="d-flex justify-content-center">
-                        <img id="preview_player" src="{{ url_for('static', filename='time_lapse.gif') }}">
+                        <div id="preview_loading">
+                            <img src="{{ url_for('static', filename='loading_wheel.gif') }}" height=60 width=80/>
+                            <h4>Regenerating time lapse...</h4>
+                        </div>
+                        <img id="preview_player" src="{{ url_for('static', filename='time_lapse.gif') }}"/>
                     </div>
                     <br>
                     <div class="row">

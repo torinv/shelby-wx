@@ -30,6 +30,7 @@ def index_save_time_lapse():
             int(request.form['fps']),
             int(request.form['retain'])
         )
+        Thread(target=time_lapse_driver.regenerate_time_lapse_preview).start()
 
     return render_template('index.html')
 
@@ -47,6 +48,11 @@ def update_wx_data():
 
         return jsonify(weather_data)
     return {}
+
+
+@app.route('/_time_lapse_regenerating', methods=['GET'])
+def time_lapse_regenerating():
+    return jsonify(regenerating=time_lapse_driver.regenerating)
 
 @app.route('/_get_time_lapse_params', methods=['GET'])
 def get_time_lapse_params():
