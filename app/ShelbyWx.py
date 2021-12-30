@@ -16,7 +16,7 @@ time_lapse_driver = TimeLapseDriver()
 @app.route('/', methods=['GET', 'POST'])
 def index_save_time_lapse():
     if request.form.get('save') == 'Save Time Lapse':
-        Thread(target=time_lapse_driver.save_time_lapse).run()
+        Thread(target=time_lapse_driver.save_time_lapse).start()
 
     if request.form.get('update') == 'Update':
         try:

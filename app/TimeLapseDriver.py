@@ -5,6 +5,7 @@ import datetime
 import cv2
 import threading
 from collections import deque
+from collections.abc import Iterator
 from enum import Enum
 from threading import Thread
 
@@ -18,10 +19,43 @@ class TimeLapseUnit(Enum):
     HOUR = 2
     DAY = 3
 
+class Frame(object):
+    def __init__(self, preview_img: list, file: str):
+        self.preview_img = preview_img
+        self.file = file
+
+class FrameDeque(deque):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def popleft(self) -> Frame:
+        el = super().popleft()
+        os.remove(el.file)
+        return el
+
+    def pop(self) -> Frame:
+        el = super().pop()
+        os.remove(el.file)
+        return el
+
+    def append(self, preview_img: list, file: str) -> None:
+        return super().append(Frame(preview_img, file))
+
+    def trim(self, new_len: int) -> None:
+        while len(self) > new_len:
+            self.popleft()
+
+    def get_preview_images(self):
+        for frame in self:
+            yield frame.preview_img
+
+    def get_frame_files(self):
+        for frame in self:
+            yield frame.file
+
 class TimeLapseDriver(object):
-    def __init__(self, save_images_to_disk: bool=False):
+    def __init__(self):
         # Record
-        self._save_to_disk = save_images_to_disk
         self.num_frames = 60
         self.unit = TimeLapseUnit.MINUTE
 
@@ -29,7 +63,7 @@ class TimeLapseDriver(object):
         self.fps = 15
         self.retain_frames = 1000
 
-        self._frame_queue = deque()
+        self._frame_queue = FrameDeque()
         self._temp_path = os.path.join('./static', 'time_lapse.gif')
 
         self._counter = 0
@@ -61,13 +95,6 @@ class TimeLapseDriver(object):
                 self._latest_frame = frame
             time.sleep(1)
 
-    def _trim_frame_queue(self):
-        if len(self._frame_queue) > self.retain_frames:
-            if self._save_to_disk:
-                os.remove(self._frame_queue.popleft())
-            else:
-                self._frame_queue.popleft()
-
     def run(self):
         while True:
             time.sleep(1)
@@ -91,32 +118,23 @@ class TimeLapseDriver(object):
 
         # Reset frame deque if it changed sizes
         lock.acquire()
-        if retain < self.retain_frames:
-            self._trim_frame_queue()
+        self._frame_queue.trim(self.retain_frames)
         lock.release()
 
         self.retain_frames = retain
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
     def take_snapshot(self):
-        if self._latest_frame is not None:
-            if self._save_to_disk:
-                self.save_snapshot_disk()
-            else:
-                self.save_snapshot_ram()
+        if self._latest_frame is None:
+            return
 
-    def save_snapshot_ram(self):
-        lock.acquire()
-        self._frame_queue.append(self._latest_frame)
-        self._trim_frame_queue()
-        lock.release()
-
-    def save_snapshot_disk(self):
         frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
+        preview_img = cv2.resize(self._latest_frame, (0, 0), fx=0.22, fy=0.22)
+        preview_img = cv2.cvtColor(preview_img, cv2.COLOR_BGR2RGB)
 
         lock.acquire()
-        self._frame_queue.append(frame_file)
-        self._trim_frame_queue()
+        self._frame_queue.append(preview_img, frame_file)
+        self._frame_queue.trim(self.retain_frames)
         lock.release()
 
         cv2.imwrite(frame_file, self._latest_frame)
@@ -125,12 +143,12 @@ class TimeLapseDriver(object):
         if len(self._frame_queue) == 0:
             return None
 
-        self._delete_time_lapse()
+        self._delete_time_lapse_preview()
 
         lock.acquire()
         with imageio.get_writer(self._temp_path, mode='I', duration=1 / self.fps) as writer:
-            for image in self._frame_queue:
-                writer.append_data(cv2.resize(image, (640, 360)))
+            for image in self._frame_queue.get_preview_images():
+                writer.append_data(image)
         lock.release()
 
         return 'time_lapse.gif'
@@ -143,30 +161,13 @@ class TimeLapseDriver(object):
             (FRAME_WIDTH, FRAME_HEIGHT)
         )
 
-        if self._save_to_disk:
-            self.gen_time_lapse_disk(writer)
-        else:
-            self.gen_time_lapse_ram(writer)
-
+        lock.acquire()
+        for image_file in self._frame_queue.get_frame_files():
+            writer.write(cv2.imread(image_file))
+        lock.release()
         writer.release()
 
-    def gen_time_lapse_ram(self, writer):
-        lock.acquire()
-        for img in self._frame_queue:
-            writer.write(img)
-        lock.release()
-
-    def gen_time_lapse_disk(self, writer):
-        img_arr = []
-        lock.acquire()
-        for image in self._frame_queue:
-            img_arr.append(cv2.imread(image))
-        lock.release()
-
-        for img in img_arr:
-            writer.write(img)
-
-    def _delete_time_lapse(self):
+    def _delete_time_lapse_preview(self):
         if os.path.exists(self._temp_path):
             os.remove(self._temp_path)
 
