@@ -5,7 +5,6 @@ import datetime
 import cv2
 import threading
 from collections import deque
-from collections.abc import Iterator
 from enum import Enum
 from threading import Thread
 
@@ -62,15 +61,15 @@ class TimeLapseDriver(object):
         # Playback
         self.fps = 15
         self.retain_frames = 1000
-        self.regenerating = False
+        self._regenerating = False
 
         self._frame_queue = FrameDeque()
-        self._temp_path = os.path.join('./static', 'time_lapse.gif')
+        self._preview_filename = os.path.join('./static', 'preview_' + str(datetime.datetime.now()) + '.gif')
 
         self._counter = 0
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
-        self._preview_writer = imageio.get_writer(self._temp_path, mode='I', duration=1 / self.fps) 
+        self._preview_writer = imageio.get_writer(self._preview_filename, mode='I', duration=1 / self.fps) 
 
         # Stream
         self._capture_url = 'rtsp://' + \
@@ -107,9 +106,9 @@ class TimeLapseDriver(object):
                 self._counter += 1
                 continue
 
-            # Take snapshot and reset counter
+            # Take snapshot and reset counter, rename preview
             self._counter = 0
-            self.take_snapshot()
+            self._take_snapshot()
 
     def update_params(self, num_frames, unit, fps, retain):
         # Set new parameters and reset counter
@@ -127,7 +126,16 @@ class TimeLapseDriver(object):
         self.retain_frames = retain
         self._seconds_to_wait = self._calculate_seconds_to_wait(self.num_frames, self.unit)
 
-    def take_snapshot(self):
+    def get_preview_file_and_regen(self):
+        self._rename_preview()
+        return self._preview_filename, self._regenerating
+
+    def _rename_preview(self):
+        new_path = os.path.join('./static', 'preview_' + str(datetime.datetime.now()) + '.gif')
+        os.rename(self._preview_filename, new_path)
+        self._preview_filename = new_path
+
+    def _take_snapshot(self):
         if self._latest_frame is None:
             return
 
@@ -145,16 +153,16 @@ class TimeLapseDriver(object):
         cv2.imwrite(frame_file, self._latest_frame)
 
     def regenerate_time_lapse_preview(self):
-        self.regenerating = True
+        self._regenerating = True
         self._delete_time_lapse_preview()
-        self._preview_writer = imageio.get_writer(self._temp_path, mode='I', duration=1 / self.fps)
+        self._preview_writer = imageio.get_writer(self._preview_filename, mode='I', duration=1 / self.fps)
 
         lock.acquire()
         for preview_img in self._frame_queue.get_preview_images():
             self._preview_writer.append_data(preview_img)
         lock.release()
 
-        self.regenerating = False
+        self._regenerating = False
 
     def save_time_lapse(self):
         writer = cv2.VideoWriter(
@@ -171,8 +179,8 @@ class TimeLapseDriver(object):
         writer.release()
 
     def _delete_time_lapse_preview(self):
-        if os.path.exists(self._temp_path):
-            os.remove(self._temp_path)
+        if os.path.exists(self._preview_filename):
+            os.remove(self._preview_filename)
 
     @staticmethod
     def _calculate_seconds_to_wait(num_frames: int, unit: TimeLapseUnit) -> int:

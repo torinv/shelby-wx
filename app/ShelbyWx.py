@@ -52,7 +52,11 @@ def update_wx_data():
 
 @app.route('/_time_lapse_regenerating', methods=['GET'])
 def time_lapse_regenerating():
-    return jsonify(regenerating=time_lapse_driver.regenerating)
+    preview_filename, regenerating = time_lapse_driver.get_preview_file_and_regen()
+    return jsonify(
+        regenerating=regenerating,
+        preview_filename=preview_filename
+    )
 
 @app.route('/_get_time_lapse_params', methods=['GET'])
 def get_time_lapse_params():

@@ -61,11 +61,13 @@
                 $("#preview_loading").show();
                 $.getJSON("/_time_lapse_regenerating", (data) => {
                     if (data["regenerating"]) {
+                        console.log(data["preview_filename"])
                         setTimeout(() => time_lapse_regenerating(), 2000);
                     } else {
-                        $("#preview_player").attr("src", './static/time_lapse.gif');
-                        $("#preview_player").show();
-                        $("#preview_loading").hide();
+                        $("#preview_player").attr("src", data["preview_filename"]).on('load', () => {
+                            $("#preview_player").show();
+                            $("#preview_loading").hide();
+                        });
                     }
                 });
             }
@@ -246,9 +248,9 @@
                     <div class="d-flex justify-content-center">
                         <div id="preview_loading">
                             <img src="{{ url_for('static', filename='loading_wheel.gif') }}" height=60 width=80/>
-                            <h4>Regenerating time lapse...</h4>
+                            <h4>Loading time lapse...</h4>
                         </div>
-                        <img id="preview_player" src="{{ url_for('static', filename='time_lapse.gif') }}"/>
+                        <img id="preview_player" src=""/>
                     </div>
                     <br>
                     <div class="row">

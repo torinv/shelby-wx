@@ -5,3 +5,4 @@ keys.yml
 *.jpeg
 .vscode
 time_lapse.gif
+preview_*.gif
