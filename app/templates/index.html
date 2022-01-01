@@ -64,10 +64,9 @@
                         console.log(data["preview_filename"])
                         setTimeout(() => time_lapse_regenerating(), 2000);
                     } else {
-                        $("#preview_player").attr("src", data["preview_filename"]).on('load', () => {
-                            $("#preview_player").show();
-                            $("#preview_loading").hide();
-                        });
+                        $("#preview_player").attr("src", data["preview_filename"]);
+                        $("#preview_player").show();
+                        $("#preview_loading").hide();
                     }
                 });
             }
@@ -198,7 +197,7 @@
                             <div class="wind-wheel">
                                 <img src="{{ url_for('static', filename='wind_wheel.svg') }}"/>
                                 <img src="{{ url_for('static', filename='wind_needle.svg') }}" id="wind_needle"/>
-                                <div id="param_wind_dir">222</div>
+                                <div id="param_wind_dir">---</div>
                             </div>
                         </div>
 

@@ -140,7 +140,7 @@ class TimeLapseDriver(object):
             return
 
         frame_file = './frames/' + str(datetime.datetime.now()) + '.jpeg'
-        preview_img = cv2.resize(self._latest_frame, (0, 0), fx=0.22, fy=0.22)
+        preview_img = cv2.resize(self._latest_frame, (0, 0), fx=0.12, fy=0.12)
         preview_img = cv2.cvtColor(preview_img, cv2.COLOR_BGR2RGB)
 
         lock.acquire()
